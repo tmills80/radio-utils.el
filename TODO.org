@@ -1,0 +1,11 @@
+* Testing
+There is no unit testing
+* Radio control funtions
+There is much more to do for control of radios
+* Multiple VFOs
+ How can multiple VFOs be handled?
+* Bookmarks
+Bookmarking of radio settings
+* CSV Userlist style functionality
+ CSV Userlist is a great piece of software which allows importing of frequency lists (eg EIBI) and showing current schedule for the frequency, and control of the radio.
+ And much more

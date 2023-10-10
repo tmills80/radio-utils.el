@@ -1,0 +1,8 @@
+* radio-utils.el
+ A set of emacs lisp utils for Radio Monitoring and Ham Radio usage
+ 
+** Radio control
+Wrappers around Hamlib to control and get information from radios
+
+** Logging
+Some utilities to assist in logging to an org file
