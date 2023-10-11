@@ -1,7 +1,12 @@
 ;; TODO add more sources - each with their own capture template
 
 ;; SDR Console in Windows: run rigctld.exe -m 2014 -r COM2 in windows to expose this
-(setq radio-default-radio (make-radio-definition :name "SDR Console" :port "192.168.64.1:4532" :rig-number 2))
+(setq radio-default-radio
+      (make-radio-definition
+       :name "SDR Console - Airspy HF+"
+       :port "192.168.64.1:4532"
+       :rig-number 2
+       :antenna "Cross Country Wireless LNA+"))
 ;; Set the log file
 (setq radio-log-file "~/org/RadioLog.org")
 

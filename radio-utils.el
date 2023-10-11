@@ -49,7 +49,11 @@
   :type 'file
   :group 'radio)
 
-(defvar radio-default-radio)
+(defvar radio-default-radio
+  nil
+  "`radio-definition' of the default radio.")
+
+
 
 ;;;; Functions
 
@@ -57,7 +61,8 @@
   "Definition of a radio."
   (name nil :documentation "A human friendly name for the radio.")
   (rig-number nil :documentation "The rig number from Hamlib.")
-  (port nil :documentation "The port to use: eg COM1, 192.168.64.1:4532"))
+  (port nil :documentation "The port to use: eg COM1, 192.168.64.1:4532")
+  (antenna nil :documentation "The antenna in use"))
 
 
 (defun radio--send-command (radio command)
@@ -118,8 +123,10 @@ If optional RADIO is nil then use `radio-default-radio'."
   (concat "* " (radio-utc-time) " %^{Station}\n"
           ":PROPERTIES:\n"
           ":START-TIME:" (radio-utc-time) "\n"
-          ":FREQUENCY:" "%^{Frequency|" (radio-get-frequency radio) "}\n"
-          ":MODE:" "%^{Mode|" (radio-get-mode radio) "}\n"
+          ":FREQUENCY:%^{Frequency|" (radio-get-frequency radio) "}\n"
+          ":MODE:%^{Mode|" (radio-get-mode radio) "}\n"
+          ":RADIO:%^{Radio|" (radio-definition-name radio) "}\n"
+          ":ANTENNA:%^{Antenna| " (radio-definition-antenna radio) "}\n"
           ":END:\n"
           "%?"))
 
