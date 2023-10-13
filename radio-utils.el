@@ -53,8 +53,6 @@
   nil
   "`radio-definition' of the default radio.")
 
-
-
 ;;;; Functions
 
 (cl-defstruct radio-definition
@@ -63,7 +61,6 @@
   (rig-number nil :documentation "The rig number from Hamlib.")
   (port nil :documentation "The port to use: eg COM1, 192.168.64.1:4532")
   (antenna nil :documentation "The antenna in use"))
-
 
 (defun radio--send-command (radio command)
   "Send a `Hamlib' command COMMAND to radio RADIO."
@@ -135,6 +132,48 @@ If optional RADIO is nil then use `radio-default-radio'."
   "Generate an `org-capture' template using `radio-default-radio'.
 Provide this as an argument to an `org-capture-templates' entry."
   (radio--log-template radio-default-radio))
+
+;;;;; Location functions
+
+(defun radio--grid-to-ord (char)
+  "Convert CHAR to its grid location value.
+If CHAR is ?A - ?X then ?A = 0, ?B = 1 etc.
+If CHAR is ?0 - ?9 then return the numeric value."
+  (cond ((and (>= char ?A) (<= char ?X)) (- char ?A))
+        ((and (>= char ?0) (<= char ?9)) (- char ?0))
+        (t (error "Not a valid Maidenhead character %s" char))))
+
+(defun radio--valid-grid-p (grid)
+  "Test if GRID is a valid Maidenhead grid reference."
+  (let ((regex "^[A-R][A-R]\\([0-9][0-9]\\|[0-9][0-9][A-X][A-X]\\)?$"))
+    (string-match-p regex grid)))
+
+(defun radio-grid-to-latlong (grid)
+  "Convert Maidenhead GRID to its latitude and longitude.
+Provides the SW corner of the area defined by the grid reference."
+  (if (not (radio--valid-grid-p grid))
+      (error "Invalid Maidenhead grid reference %s" grid)
+    (let* ((locations (mapcar #'radio--grid-to-ord grid))
+           (len (length locations))
+           (lat 0.0)
+           (lon 0.0))
+      ;; Field - 20 degrees longitude by 10 degrees lattitude
+      ;;   Longitude A is at +/-180 (half way round the world from Greenwich)
+      ;;   Latitude A is at -90 (ie south pole)
+      (setq lat (+ -90 (* 10 (nth 1 locations))))
+      (setq lon (+ -180 (* 20 (car locations))))
+      ;; Square - 2 degrees longitude by 1 degree lattitude
+      (if (> len 2)
+          (progn
+            (setq lat (+ lat (nth 3 locations)))
+            (setq lon (+ lon (* 2 (nth 2 locations))))))
+      ;; Subsquare - 5 arcminutes longitude by 2.5 arcminutes latitude
+      (if (> len 4)
+          (progn
+            (setq lat (+ lat (* (nth 5 locations) (/ 2.5 60))))
+            (setq lon (+ lon (* (nth 4 locations) (/ 5.0 60))))))
+      (list lat lon))))
+
 
 (provide 'radio-utils)
 ;;; radio-utils.el ends here
