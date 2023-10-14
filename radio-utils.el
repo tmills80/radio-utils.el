@@ -150,7 +150,8 @@ If CHAR is ?0 - ?9 then return the numeric value."
 
 (defun radio-grid-to-latlong (grid)
   "Convert Maidenhead GRID to its latitude and longitude.
-Provides the SW corner of the area defined by the grid reference."
+Provides the SW corner of the area defined by the grid reference.
+See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explanation."
   (if (not (radio--valid-grid-p grid))
       (error "Invalid Maidenhead grid reference %s" grid)
     (let* ((locations (mapcar #'radio--grid-to-ord grid))
@@ -172,7 +173,29 @@ Provides the SW corner of the area defined by the grid reference."
           (progn
             (setq lat (+ lat (* (nth 5 locations) (/ 2.5 60))))
             (setq lon (+ lon (* (nth 4 locations) (/ 5.0 60))))))
-      (list lat lon))))
+      (cons lat lon))))
+
+(defun radio-latlong-to-grid (latlong)
+  "Convert the LATLONG given in a cons cell to a Maidenhead 3rd level grid square.
+See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explanation."
+  (let* ((arcminute (/ 1 60.0))
+         (lat (+ 90 (car latlong)))
+         (lon (+ 180 (cdr latlong)))
+         (field-lon (floor (/ lon 20)))
+         (field-lat (floor (/ lat 10)))
+         (square-lon (floor (/ (mod lon 20) 2)))
+         (square-lat (floor (mod lat 10)))
+         (sub-lon (floor (/ (mod (mod lon 20) 2) (* 5 arcminute))))
+         (sub-lat (floor (/ (mod (mod lat 10) 1) (* 2.5 arcminute))))
+         )
+    (cl-flet ((get-char (val) (char-to-string (+ ?A val))))
+      (format "%s%s%d%d%s%s"
+              (get-char field-lon)
+              (get-char field-lat)
+              square-lon
+              square-lat
+              (get-char sub-lon)
+              (get-char sub-lat)))))
 
 
 (provide 'radio-utils)
