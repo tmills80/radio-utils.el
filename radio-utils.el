@@ -162,17 +162,29 @@ See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explan
       ;;   Longitude A is at +/-180 (half way round the world from Greenwich)
       ;;   Latitude A is at -90 (ie south pole)
       (setq lat (+ -90 (* 10 (nth 1 locations))))
-      (setq lon (+ -180 (* 20 (car locations))))
+      (setq lon (+ -180 (* 20 (nth 0 locations))))
       ;; Square - 2 degrees longitude by 1 degree lattitude
       (if (> len 2)
           (progn
             (setq lat (+ lat (nth 3 locations)))
-            (setq lon (+ lon (* 2 (nth 2 locations))))))
-      ;; Subsquare - 5 arcminutes longitude by 2.5 arcminutes latitude
-      (if (> len 4)
-          (progn
-            (setq lat (+ lat (* (nth 5 locations) (/ 2.5 60))))
-            (setq lon (+ lon (* (nth 4 locations) (/ 5.0 60))))))
+            (setq lon (+ lon (* 2 (nth 2 locations))))
+            ;; Subsquare - 5 arcminutes longitude by 2.5 arcminutes latitude
+            (if (> len 4)
+                (progn
+                  (setq lat (+ lat
+                               (* (nth 5 locations) (/ 2.5 60))
+                               (/ 1.25 60)))
+                  (setq lon (+ lon
+                               (* (nth 4 locations) (/ 5.0 60))
+                               (/ 2.5 60))))
+              ;; else find center of square
+              (progn
+                (setq lat (+ lat 0.5))
+                (setq lon (+ lon 1)))))
+        ;; else find middle of field
+        (progn
+          (setq lat (+ lat 5))
+          (setq lon (+ lon 10))))
       (cons lat lon))))
 
 (defun radio-latlong-to-grid (latlong)
@@ -186,8 +198,7 @@ See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explan
          (square-lon (floor (/ (mod lon 20) 2)))
          (square-lat (floor (mod lat 10)))
          (sub-lon (floor (/ (mod (mod lon 20) 2) (* 5 arcminute))))
-         (sub-lat (floor (/ (mod (mod lat 10) 1) (* 2.5 arcminute))))
-         )
+         (sub-lat (floor (/ (mod (mod lat 10) 1) (* 2.5 arcminute)))))
     (cl-flet ((get-char (val) (char-to-string (+ ?A val))))
       (format "%s%s%d%d%s%s"
               (get-char field-lon)
@@ -196,7 +207,6 @@ See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explan
               square-lat
               (get-char sub-lon)
               (get-char sub-lat)))))
-
 
 (provide 'radio-utils)
 ;;; radio-utils.el ends here

@@ -16,13 +16,13 @@
 
 (describe "Maidenhead to latitude & longitude"
   (it "Should work for a field:"
-    (expect (radio-grid-to-latlong "CN" ) :to-equal '(40 . -140)))
+    (expect (radio-grid-to-latlong "CN" ) :to-equal '(45 . -130)))
   (it "Should calculate for field and square"
-    (expect (radio-grid-to-latlong "CN87") :to-equal '(47 . -124)))
+    (expect (radio-grid-to-latlong "CN87") :to-equal '(47.5 . -123)))
   (it "should calculate down to subsquare"
     (let ((result (radio-grid-to-latlong "CN87TQ")))
-      (expect (car result) :to-be-close-to 47.6666666666 10)
-      (expect (cdr result) :to-be-close-to -122.41666666666 10)))
+      (expect (car result) :to-be-close-to 47.6875 10)
+      (expect (cdr result) :to-be-close-to -122.375 10)))
   (it "should error with invalid grid reference"
     (expect (radio-grid-to-latlong "SS") :to-throw)))
 
