@@ -9,3 +9,7 @@ Bookmarking of radio settings
 * CSV Userlist style functionality
  CSV Userlist is a great piece of software which allows importing of frequency lists (eg EIBI) and showing current schedule for the frequency, and control of the radio.
  And much more
+* Maidenhead grid location tools
+** 8 and 10 figure grid locators
+Not implementing as I have no need for them
+** Distance between grid locators
