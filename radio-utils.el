@@ -25,9 +25,10 @@
 
 ;;; Commentary:
 
-;; radio-utils is a collection of utilities I have written for using and logging my radio
-;; listening and ham radio activities in Emacs
-;; The log file is an org-mode file, radio control is achieved using rigctl from Hamlib
+;; radio-utils is a collection of utilities I have written for using
+;; and logging my radio listening and ham radio activities in Emacs
+;; The log file is an org-mode file, radio control is achieved using
+;;rigctl from Hamlib
 
 
 ;;; Code:
@@ -66,7 +67,8 @@
   "Send a `Hamlib' command COMMAND to radio RADIO."
   (let ((rig-number (radio-definition-rig-number radio))
 	(port (radio-definition-port radio)))
-    (shell-command-to-string (format "rigctl -m %d -r %s %s" rig-number port command))))
+    (shell-command-to-string
+     (format "rigctl -m %d -r %s %s" rig-number port command))))
 
 (defun radio-utc-time (&optional time format)
   "Get the time in UTC.
@@ -151,7 +153,8 @@ If CHAR is ?0 - ?9 then return the numeric value."
 (defun radio-grid-to-latlong (grid)
   "Convert Maidenhead GRID to its latitude and longitude.
 Provides the SW corner of the area defined by the grid reference.
-See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explanation."
+See `https://www.dxzone.com/grid-square-locator-system-explained/'
+for an explanation."
   (if (not (radio--valid-grid-p grid))
       (error "Invalid Maidenhead grid reference %s" grid)
     (let* ((locations (mapcar #'radio--grid-to-ord grid))
@@ -188,8 +191,10 @@ See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explan
       (cons lat lon))))
 
 (defun radio-latlong-to-grid (latlong)
-  "Convert the LATLONG given in a cons cell to a Maidenhead 3rd level grid square.
-See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explanation."
+  "Convert a latitude and longitude to a Maidenhead 3rd level grid square.
+LATLONG should be a cons cell with the latitude and longitude.
+See `https://www.dxzone.com/grid-square-locator-system-explained/' for an
+explanation."
   (let* ((arcminute (/ 1 60.0))
          (lat (+ 90 (car latlong)))
          (lon (+ 180 (cdr latlong)))
@@ -207,6 +212,35 @@ See `https://www.dxzone.com/grid-square-locator-system-explained/' for an explan
               square-lat
               (get-char sub-lon)
               (get-char sub-lat)))))
+
+(defun radio--latlong-distnace (location1 location2)
+  "Calculate distances between two points of latitude and longitude in km.
+LOCATION1 and LOCATION2 are cons cells of the location
+
+Do not use for high precision calculations or two points close together.
+
+Uses spherical law of cosines:
+    `https://en.wikipedia.org/wiki/Great-circle_distance#Formulae'
+assuming that the platform Emacs is running on uses IEEE binary64
+and as the precision of Maidenhead Grid is not down to a few meters
+this will result in a low chance of a rounding error."
+  (let ((lat1 (degrees-to-radians (car location1)))
+        (lon1 (degrees-to-radians (cdr location1)))
+        (lat2 (degrees-to-radians (car location2)))
+        (lon2 (degrees-to-radians (cdr location2)))
+        (r 6371))
+    (* r
+       (acos (+ (* (sin lat1) (sin lat2))
+                (* (cos lat1)
+                   (cos lat2)
+                   (cos (abs (- lon2 lon1)))))))))
+
+(defun radio-distance (grid1 grid2)
+  "Calculate distance between two grid squares, GRID1 and GRID2, in km.
+This is approximate, assuming a spherical earth as the precision needed for my
+purposes is not high."
+  (radio--latlong-distnace (radio-grid-to-latlong grid1)
+                           (radio-grid-to-latlong grid2)))
 
 (provide 'radio-utils)
 ;;; radio-utils.el ends here

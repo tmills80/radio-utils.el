@@ -36,6 +36,12 @@
   (it "Should return the correct field FB71DC"
     (expect (radio-latlong-to-grid '(-77.8938405 . -65.72564)) :to-equal "FB72DC")))
 
+(describe "radio-distance"
+  (it "Should give distance between two grids"
+    (expect (radio-distance "CN87TQ" "IO91DC") :to-be-close-to 7661.703 3)
+    (expect (radio-distance "QH11EF" "KN59XJ") :to-be-close-to 13047.606 3))
+  (it "Should work for neighbouring grids"
+    (expect (radio-distance "CN87TQ" "CN87TO") :to-be-close-to 9.266 3)))
 
 (ert-deftest grid-char-conversion ()
   (should (equal (radio--grid-to-ord ?A) 0))
